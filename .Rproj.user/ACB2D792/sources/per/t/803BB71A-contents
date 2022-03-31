@@ -1,0 +1,68 @@
+###############################################################
+
+# Cardoso, P., Fukushima, C.S. & Mammola, S. (subm.) Quantifying the international collaboration of researchers and research institutions.
+
+## ------------------------------------------------------------------------
+# 'R script to reproduce the analyses'
+## ------------------------------------------------------------------------
+
+# Packages ----------------------------------------------------------------
+
+library("RAT")
+library("wosr")
+
+# get data ---------------------------------------------------------------
+
+authors <- readRDS("Data/authors.rds") # a database with 200 autthors from the university of helsinki from different fields
+load("Data/map.rda") #internal daa in RAT
+
+# Setting sid
+sid <- auth(NULL, password = NULL) #change with your WoS access (if you have a university VPN, keep it as is)
+
+# Setting WoS collection
+coll <- c("SCI", "SSCI", "AHCI", "ISTP", "ISSHP", "BSCI", "BHCI", "ESCI")
+
+i_index      <- c()
+i_index_GDP  <- c()
+i_index_h    <- c()
+h_index      <- c()
+n_publ       <- c()
+academic_age <- c()
+total <- nrow(authors)
+
+for(i in 1:total){
+  author <- paste(authors[i, 1], ", ", authors[i, 2], sep = "")
+  cat("Author", i, ":", author, "\n")
+  aut <- wos(paste("AU = ", author, " AND AD = Helsinki", sep = ""))
+  
+  if(nrow(aut$publication) == 0){
+    n_publ <- c(n_publ,NA)
+    h_index      <- c(h_index, NA)
+    i_index      <- c(i_index, NA)
+    i_index_GDP  <- c(i_index_GDP, NA)
+    i_index_h    <- c(i_index_h, NA)
+    academic_age <- append(academic_age,NA)
+  } else{
+  
+  n_publ <- c(n_publ, nrow(aut$publication))
+  
+  year <- format(as.POSIXct(aut$publication$date, format = "%m/%d/%Y"), format = "%Y")
+  year <- as.numeric(year)
+  academic_age <-
+    append(academic_age, max(year, na.rm = TRUE) - min(year, na.rm = TRUE))
+  
+  h_index     <- c(h_index, h.index(aut))
+  i_index     <- c(i_index, i.index(aut))
+  i_index_GDP <- c(i_index_GDP, i.index(aut, r = TRUE))
+  i_index_h   <- c(i_index_h, i.index(aut, h = TRUE))
+  
+  }
+  
+  message(paste0("... extracted author ", i, " out of ", total))
+  Sys.sleep(15)
+  
+}
+
+authors <- data.frame(authors, n_publ, h_index, i_index, i_index_GDP, i_index_h, academic_age)
+
+save( authors, file = "Data/authors_extacted.rds")

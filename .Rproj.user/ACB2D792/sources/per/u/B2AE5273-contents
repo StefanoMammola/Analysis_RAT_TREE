@@ -1,0 +1,3 @@
+PC <- wos("A-8820-2008")
+r.index(PC, logbase = 5, plot = TRUE)
+i.map(PC)
