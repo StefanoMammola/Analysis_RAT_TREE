@@ -41,36 +41,47 @@ db <- na.omit(db) # omit missing data
 
 db <- db %>% mutate_if(is.numeric, function(x) ifelse(is.infinite(x), 0, x)) #replace infinite
 
-#Log transform
-db$i_index_l     <- log(db$i_index+1)
-db$h_index_l     <- log(db$h_index+1)
-db$i_index_GDP_l <- log(db$i_index_GDP+1)
-db$i_index_h_l     <- log(db$i_index_h+1)
+# #Log transform
+# db$i_index_l     <- log(db$i_index+1)
+# db$h_index_l     <- log(db$h_index+1)
+# db$i_index_GDP_l <- log(db$i_index_GDP+1)
+# db$i_index_h_l     <- log(db$i_index_h+1)
 
-#correlation?
-as.numeric(round(cor.test(db$i_index, db$h_index)$estimate, 4))
-as.numeric(round(cor.test(db$i_index_l, db$h_index_l)$estimate, 4))
-
-as.numeric(round(cor.test(db$i_index_GDP, db$h_index)$estimate, 4))
-as.numeric(round(cor.test(db$i_index_GDP_l, db$h_index_l)$estimate, 4))
-
-as.numeric(round(cor.test(db$i_index, db$i_index_h)$estimate, 4))
-as.numeric(round(cor.test(db$i_index_l, db$i_index_h_l)$estimate, 4))
+# #correlation?
+# as.numeric(round(cor.test(db$i_index, db$h_index)$estimate, 4))
+# as.numeric(round(cor.test(db$i_index_l, db$h_index_l)$estimate, 4))
+# 
+# as.numeric(round(cor.test(db$i_index_GDP, db$h_index)$estimate, 4))
+# as.numeric(round(cor.test(db$i_index_GDP_l, db$h_index_l)$estimate, 4))
+# 
+# as.numeric(round(cor.test(db$i_index, db$i_index_h)$estimate, 4))
+# as.numeric(round(cor.test(db$i_index_l, db$i_index_h_l)$estimate, 4))
 
 # Plotting h-index vs i-index ---------------------------------------------
 
-cor_exp <- expression(paste("Pearson's ",
+# Check correlations
+cor1 <- as.numeric(round(cor.test(db$i_index, db$i_index_h)$estimate, 4))
+cor2 <- as.numeric(round(cor.test(db$i_index_GDP, db$i_index_h)$estimate, 4))
+
+# Get deviation from regression line
+db <- data.frame(db, 
+                 dev  = residuals(lm(i_index ~ i_index_h, data = db)),
+                 dev2 = residuals(lm(i_index_GDP ~ i_index_h, data = db))
+                 )
+
+# Set plot parameters
+cor_exp1 <- expression(paste("Pearson's ",
                             italic("r"),
-                            " = 0.79"))
+                            " = ", "-0.01"))
 
 cor_exp2 <- expression(paste("Pearson's ",
                             italic("r"),
-                            " = 0.75"))
-#set color
-COL <- c("chartreuse3","blue","black","purple")
+                            " = ", "0.06"))
+
+color_custom <- c("chartreuse3","blue","black","purple")
 
 #plot
-(plot_A <- ggplot(db, aes(y = jitter(i_index_l), x = jitter(h_index_l))) +
+(plot_A <- ggplot(db, aes(y = jitter(i_index), x = jitter(i_index_h))) +
     geom_smooth(
       method = lm,
       se = FALSE,
@@ -82,14 +93,14 @@ COL <- c("chartreuse3","blue","black","purple")
       aes(color = area, size = academic_age),
       alpha = 0.4,
     ) +
-    scale_color_manual(values=COL)+
+    scale_color_manual(values=color_custom)+
     #scale_size_manual("Academic age", values = c(1,2,4))+
     annotate(
       geom = "text",
       x = 0.7,
-      y = 2.2,
+      y = 7.5,
       size = 4,
-      label = cor_exp,
+      label = cor_exp1,
       color = "black",
       fontface = "bold"
     ) +
@@ -98,7 +109,7 @@ COL <- c("chartreuse3","blue","black","purple")
       color = "Discipline",
       size = "Academic age\n[years]",
       x = NULL,
-      y = "i-index [log-transformed]"
+      y = "i-index"
     ) + theme(
       legend.position = "none",
       legend.background = element_blank(),
@@ -114,8 +125,6 @@ COL <- c("chartreuse3","blue","black","purple")
     )
 )
 
-db <- data.frame(db, dev = residuals(lm(i_index_l ~ h_index_l, data = db)))
-
 (plot_B <- 
     ggplot(data = db,
            aes(x = area, y = dev, fill = area, color = area)) +
@@ -127,8 +136,8 @@ db <- data.frame(db, dev = residuals(lm(i_index_l ~ h_index_l, data = db)))
     labs(title = NULL, x = NULL, y= "Deviation from the line (Plot A)") +
     geom_hline(yintercept=0, col = "grey30", linetype = "dotted")+
     guides(fill = FALSE, color = FALSE) +
-    scale_fill_manual(values =  COL) +
-    scale_colour_manual(values = COL) +
+    scale_fill_manual(values =  color_custom) +
+    scale_colour_manual(values = color_custom) +
     theme_bw() +
     theme(
       legend.position = "none",
@@ -145,7 +154,7 @@ db <- data.frame(db, dev = residuals(lm(i_index_l ~ h_index_l, data = db)))
   
 )
 
-(plot_C <- ggplot(db, aes(y = jitter(i_index_GDP_l), x = jitter(h_index_l))) +
+(plot_C <- ggplot(db, aes(y = jitter(i_index_GDP), x = jitter(i_index_h))) +
     geom_smooth(
       method = lm,
       se = FALSE,
@@ -157,12 +166,11 @@ db <- data.frame(db, dev = residuals(lm(i_index_l ~ h_index_l, data = db)))
       aes(color = area, size = academic_age),
       alpha = 0.4,
     ) +
-    scale_color_manual(values=COL)+
-    #scale_size_manual("Academic age", values = c(1,2,4))+
+    scale_color_manual(values=color_custom)+
     annotate(
       geom = "text",
       x = 0.7,
-      y = 1.5,
+      y = 4,
       size = 4,
       label = cor_exp2,
       color = "black",
@@ -172,8 +180,8 @@ db <- data.frame(db, dev = residuals(lm(i_index_l ~ h_index_l, data = db)))
       title = NULL,
       color = "Discipline",
       size = "Academic age\n[years]",
-      x = "h-index [log-transformed]",
-      y = "weighted i-index [log-transformed]"
+      x = "i-index / h-index",
+      y = "weighted i-index"
     ) + theme(
       legend.position = "none",
       legend.background = element_blank(),
@@ -189,8 +197,6 @@ db <- data.frame(db, dev = residuals(lm(i_index_l ~ h_index_l, data = db)))
     )
 )
 
-db <- data.frame(db, dev2 = residuals(lm(i_index_GDP_l ~ h_index_l, data = db)))
-
 (plot_D <- 
     ggplot(data = db,
            aes(x = area, y = dev2, fill = area, color = area)) +
@@ -202,8 +208,8 @@ db <- data.frame(db, dev2 = residuals(lm(i_index_GDP_l ~ h_index_l, data = db)))
     labs(title = NULL, x = "Discipline", y= "Deviation from the line (Plot C)") +
     geom_hline(yintercept=0, col = "grey30", linetype = "dotted")+
     guides(fill = FALSE, color = FALSE) +
-    scale_fill_manual(values =  COL) +
-    scale_colour_manual(values = COL) +
+    scale_fill_manual(values =  color_custom) +
+    scale_colour_manual(values = color_custom) +
     theme_bw() +
     theme(
       legend.position = "none",
