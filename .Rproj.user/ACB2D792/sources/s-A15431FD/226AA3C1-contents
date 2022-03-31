@@ -6,6 +6,9 @@
 # 'R script to reproduce the analyses'
 ## ------------------------------------------------------------------------
 
+# Analysis performed with R (v. R 4.1.0) and R studio (v. 1.4.1103)
+# Authors (code): Stefano Mammola & Pedro Cardoso
+
 # Packages ----------------------------------------------------------------
 
 library("RAT")
@@ -13,7 +16,7 @@ library("wosr")
 
 # get data ---------------------------------------------------------------
 
-authors <- readRDS("Data/authors.rds") # a database with 200 autthors from the university of helsinki from different fields
+authors <- readRDS("Data/authors.rds") # a database with 200 autthors from the University of Helsinki from different fields
 load("Data/map.rda") #internal daa in RAT
 
 # Setting sid
@@ -28,7 +31,7 @@ i_index_h    <- c()
 h_index      <- c()
 n_publ       <- c()
 academic_age <- c()
-total <- nrow(authors)
+total        <- nrow(authors)
 
 for(i in 1:total){
   author <- paste(authors[i, 1], ", ", authors[i, 2], sep = "")
@@ -58,11 +61,10 @@ for(i in 1:total){
   
   }
   
-  message(paste0("... extracted author ", i, " out of ", total))
-  Sys.sleep(15)
-  
+  message(paste0("... extracted author ", i, " out of ", total)) # advancement
+  Sys.sleep(15) # stop for 15 sec
 }
 
 authors <- data.frame(authors, n_publ, h_index, i_index, i_index_GDP, i_index_h, academic_age)
 
-save( authors, file = "Data/authors_extacted.rds")
+save(authors, file = "Data/authors_extracted.rds")
