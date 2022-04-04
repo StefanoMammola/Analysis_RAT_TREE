@@ -41,11 +41,10 @@ db <- na.omit(db) # omit missing data
 
 db <- db %>% mutate_if(is.numeric, function(x) ifelse(is.infinite(x), 0, x)) #replace infinite
 
-# #Log transform
+#Log transform
 # db$i_index_l     <- log(db$i_index+1)
 # db$h_index_l     <- log(db$h_index+1)
 # db$i_index_GDP_l <- log(db$i_index_GDP+1)
-# db$i_index_h_l     <- log(db$i_index_h+1)
 
 # #correlation?
 # as.numeric(round(cor.test(db$i_index, db$h_index)$estimate, 4))
@@ -56,6 +55,190 @@ db <- db %>% mutate_if(is.numeric, function(x) ifelse(is.infinite(x), 0, x)) #re
 # 
 # as.numeric(round(cor.test(db$i_index, db$i_index_h)$estimate, 4))
 # as.numeric(round(cor.test(db$i_index_l, db$i_index_h_l)$estimate, 4))
+
+# Plotting h-index vs i-index ---------------------------------------------
+
+# Check correlations
+cor1 <- as.numeric(round(cor.test(db$h_index,db$i_index)$estimate, 4))
+cor2 <- as.numeric(round(cor.test(db$h_index, db$i_index_GDP)$estimate, 4))
+
+# Get deviation from regression line
+db <- data.frame(db, 
+                 dev  = residuals(lm(i_index ~ h_index, data = db)),
+                 dev2 = residuals(lm(i_index_GDP ~ h_index, data = db))
+)
+
+# Set plot parameters
+cor_exp1 <- expression(paste("Pearson's ",
+                             italic("r"),
+                             " = ", "0.87"))
+
+cor_exp2 <- expression(paste("Pearson's ",
+                             italic("r"),
+                             " = ", "0.76"))
+
+color_custom <- c("chartreuse3","blue","black","purple")
+
+#plot
+(plot_A <- ggplot(db, aes(y = jitter(i_index), x = jitter(h_index))) +
+    geom_smooth(
+      method = lm,
+      se = FALSE,
+      col = "grey30",
+      size = 1,
+      alpha = 1
+    ) +
+    geom_point(
+      aes(color = area, size = academic_age),
+      alpha = 0.4,
+    ) +
+    scale_color_manual(values=color_custom)+
+    #scale_size_manual("Academic age", values = c(1,2,4))+
+    annotate(
+      geom = "text",
+      x = 10,
+      y = 10,
+      size = 4,
+      label = cor_exp1,
+      color = "black",
+      fontface = "bold"
+    ) +
+    theme_bw() + labs(
+      title = NULL,
+      color = "Discipline",
+      size = "Academic age\n[years]",
+      x = NULL,
+      y = "i-index"
+    ) + theme(
+      legend.position = "none",
+      legend.background = element_blank(),
+      legend.title =  element_text(size = 12, face = "bold"),
+      legend.text = element_text(size = 10),
+      plot.title = element_text(color="black", size=14, face="bold"),
+      axis.title = element_text(size = 12),
+      axis.text.x = element_blank(),
+      axis.text.y = element_text(size = 11),
+      axis.ticks.length=unit(-0.15, "cm"),
+      panel.grid = element_blank(),
+      plot.caption = element_text(size = 10, color = "gray30")
+    )
+)
+
+(plot_B <- 
+    ggplot(data = db,
+           aes(x = area, y = dev, fill = area, color = area)) +
+    geom_flat_violin(aes(fill = area), col = "white",position = position_nudge(x = 0.2, y = 0), alpha = 0.4) +
+    geom_boxplot(width = 0.2, outlier.shape = NA, alpha = 0.4, fill = "white") +
+    geom_point(aes(y = dev, color = area, size = academic_age), 
+               position = position_jitter(width = 0.15), alpha = 0.4) +
+    
+    labs(title = NULL, x = " ", y= "Deviation from the line (Plot A)") +
+    geom_hline(yintercept=0, col = "grey30", linetype = "dotted")+
+    guides(fill = FALSE, color = FALSE) +
+    scale_fill_manual(values =  color_custom) +
+    scale_colour_manual(values = color_custom) +
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      legend.title = element_text(size = 12, face = "bold"),
+      legend.text = element_text(size = 12),
+      plot.title = element_text(color="black", size=14, face="bold"),
+      axis.title = element_text(size = 12),
+      axis.text.x = element_blank(),
+      axis.text.y = element_text(size = 11),
+      axis.ticks.length=unit(-0.15, "cm"),
+      panel.grid = element_blank(),
+      plot.caption = element_text(size = 10, color = "gray30")
+    ))
+
+(plot_C <- ggplot(db, aes(y = jitter(i_index_GDP), x = jitter(h_index))) +
+    geom_smooth(
+      method = lm,
+      se = FALSE,
+      col = "grey30",
+      size = 1,
+      alpha = 1
+    ) +
+    geom_point(
+      aes(color = area, size = academic_age),
+      alpha = 0.4,
+    ) +
+    scale_color_manual(values=color_custom)+
+    annotate(
+      geom = "text",
+      x = 10,
+      y = 4.8,
+      size = 4,
+      label = cor_exp2,
+      color = "black",
+      fontface = "bold"
+    ) +
+    theme_bw() + labs(
+      title = NULL,
+      color = "Discipline",
+      size = "Academic age\n[years]",
+      x = "h-index",
+      y = "weighted i-index (i-index * r-index)"
+    ) + theme(
+      legend.position = "none",
+      legend.background = element_blank(),
+      legend.title =  element_text(size = 12, face = "bold"),
+      legend.text = element_text(size = 10),
+      plot.title = element_text(color="black", size=14, face="bold"),
+      axis.title = element_text(size = 12),
+      axis.text.x = element_text(size = 11),
+      axis.text.y = element_text(size = 11),
+      axis.ticks.length=unit(-0.15, "cm"),
+      panel.grid = element_blank(),
+      plot.caption = element_text(size = 10, color = "gray30")
+    )
+)
+
+(plot_D <- 
+    ggplot(data = db,
+           aes(x = area, y = dev2, fill = area, color = area)) +
+    geom_flat_violin(aes(fill = area), col = "white",position = position_nudge(x = 0.2, y = 0), alpha = 0.4) +
+    geom_boxplot(width = 0.2, outlier.shape = NA, alpha = 0.4, fill = "white") +
+    geom_point(aes(y = dev, color = area, size = academic_age), 
+               position = position_jitter(width = 0.15), alpha = 0.4) +
+    
+    labs(title = NULL, x = " ", y= "Deviation from the line (Plot C)") +
+    geom_hline(yintercept=0, col = "grey30", linetype = "dotted")+
+    guides(fill = FALSE, color = FALSE) +
+    scale_fill_manual(values =  color_custom) +
+    scale_colour_manual(values = color_custom) +
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      legend.title = element_text(size = 12, face = "bold"),
+      legend.text = element_text(size = 12),
+      plot.title = element_text(color="black", size=14, face="bold"),
+      axis.title = element_text(size = 12),
+      axis.text.x = element_text(size = 11),
+      axis.text.y = element_text(size = 11),
+      axis.ticks.length=unit(-0.15, "cm"),
+      panel.grid = element_blank(),
+      plot.caption = element_text(size = 10, color = "gray30")
+    )
+  
+)
+
+pdf(file = "Figure/Figure 2.pdf", width = 12, height = 8)
+
+ggpubr::ggarrange(
+  plot_A,
+  plot_B,
+  plot_C,
+  plot_D,
+  labels = c("A", "B", "C", "D"),
+  nrow = 2,
+  ncol = 2,
+  align = "hv",
+  legend= "right",
+  common.legend = TRUE
+)
+
+dev.off()
 
 # Plotting h-index vs i-index ---------------------------------------------
 
@@ -226,7 +409,7 @@ color_custom <- c("chartreuse3","blue","black","purple")
   
 )
 
-pdf(file = "Figure/Figure_2.pdf", width = 12, height = 8)
+pdf(file = "Figure/Supplementary Figure S1.pdf", width = 12, height = 8)
 
 ggpubr::ggarrange(
   plot_A,
@@ -242,3 +425,5 @@ ggpubr::ggarrange(
 )
 
 dev.off()
+
+
