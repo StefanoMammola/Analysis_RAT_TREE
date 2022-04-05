@@ -28,8 +28,8 @@ library("tidyverse")
 
 # Load data ---------------------------------------------------------------
 
-load("Data/map.rda")
-load("Data/authors_extracted.rda")
+load("Data/map.rda") #Data from within RAT with country GDP and centroid
+load("Data/authors_extracted.rda") # See Data_extraction.R for the data mining pipeline
 
 # Checking data -----------------------------------------------------------
 
@@ -41,20 +41,10 @@ db <- na.omit(db) # omit missing data
 
 db <- db %>% mutate_if(is.numeric, function(x) ifelse(is.infinite(x), 0, x)) #replace infinite
 
-#Log transform
-# db$i_index_l     <- log(db$i_index+1)
-# db$h_index_l     <- log(db$h_index+1)
-# db$i_index_GDP_l <- log(db$i_index_GDP+1)
-
-# #correlation?
-# as.numeric(round(cor.test(db$i_index, db$h_index)$estimate, 4))
-# as.numeric(round(cor.test(db$i_index_l, db$h_index_l)$estimate, 4))
-# 
-# as.numeric(round(cor.test(db$i_index_GDP, db$h_index)$estimate, 4))
-# as.numeric(round(cor.test(db$i_index_GDP_l, db$h_index_l)$estimate, 4))
-# 
-# as.numeric(round(cor.test(db$i_index, db$i_index_h)$estimate, 4))
-# as.numeric(round(cor.test(db$i_index_l, db$i_index_h_l)$estimate, 4))
+#Log transform to ease visualisation
+db$i_index     <- log(db$i_index+1)
+db$h_index     <- log(db$h_index+1)
+db$i_index_GDP <- log(db$i_index_GDP+1)
 
 # Plotting h-index vs i-index ---------------------------------------------
 
@@ -71,11 +61,11 @@ db <- data.frame(db,
 # Set plot parameters
 cor_exp1 <- expression(paste("Pearson's ",
                              italic("r"),
-                             " = ", "0.87"))
+                             " = ", "0.79"))
 
 cor_exp2 <- expression(paste("Pearson's ",
                              italic("r"),
-                             " = ", "0.76"))
+                             " = ", "0.75"))
 
 color_custom <- c("chartreuse3","blue","black","purple")
 
@@ -89,15 +79,14 @@ color_custom <- c("chartreuse3","blue","black","purple")
       alpha = 1
     ) +
     geom_point(
-      aes(color = area, size = academic_age),
+      aes(color = area, size = n_publ),
       alpha = 0.4,
     ) +
     scale_color_manual(values=color_custom)+
-    #scale_size_manual("Academic age", values = c(1,2,4))+
     annotate(
       geom = "text",
-      x = 10,
-      y = 10,
+      x = 1,
+      y = 2,
       size = 4,
       label = cor_exp1,
       color = "black",
@@ -106,9 +95,9 @@ color_custom <- c("chartreuse3","blue","black","purple")
     theme_bw() + labs(
       title = NULL,
       color = "Discipline",
-      size = "Academic age\n[years]",
+      size = "Number of\npublications",
       x = NULL,
-      y = "i-index"
+      y = "i-index [log-transformed]"
     ) + theme(
       legend.position = "none",
       legend.background = element_blank(),
@@ -129,10 +118,10 @@ color_custom <- c("chartreuse3","blue","black","purple")
            aes(x = area, y = dev, fill = area, color = area)) +
     geom_flat_violin(aes(fill = area), col = "white",position = position_nudge(x = 0.2, y = 0), alpha = 0.4) +
     geom_boxplot(width = 0.2, outlier.shape = NA, alpha = 0.4, fill = "white") +
-    geom_point(aes(y = dev, color = area, size = academic_age), 
+    geom_point(aes(y = dev, color = area, size = n_publ), 
                position = position_jitter(width = 0.15), alpha = 0.4) +
     
-    labs(title = NULL, x = " ", y= "Deviation from the line (Plot A)") +
+    labs(title = NULL, x = " ", y= "Residuals") +
     geom_hline(yintercept=0, col = "grey30", linetype = "dotted")+
     guides(fill = FALSE, color = FALSE) +
     scale_fill_manual(values =  color_custom) +
@@ -160,14 +149,14 @@ color_custom <- c("chartreuse3","blue","black","purple")
       alpha = 1
     ) +
     geom_point(
-      aes(color = area, size = academic_age),
+      aes(color = area, size = n_publ),
       alpha = 0.4,
     ) +
     scale_color_manual(values=color_custom)+
     annotate(
       geom = "text",
-      x = 10,
-      y = 4.8,
+      x = 0.8,
+      y = 1.5,
       size = 4,
       label = cor_exp2,
       color = "black",
@@ -176,9 +165,9 @@ color_custom <- c("chartreuse3","blue","black","purple")
     theme_bw() + labs(
       title = NULL,
       color = "Discipline",
-      size = "Academic age\n[years]",
-      x = "h-index",
-      y = "weighted i-index (i-index * r-index)"
+      size = "Number of\npublications",
+      x = "h-index [log-transformed]",
+      y = "weighted i-index [log-transformed]"
     ) + theme(
       legend.position = "none",
       legend.background = element_blank(),
@@ -199,10 +188,10 @@ color_custom <- c("chartreuse3","blue","black","purple")
            aes(x = area, y = dev2, fill = area, color = area)) +
     geom_flat_violin(aes(fill = area), col = "white",position = position_nudge(x = 0.2, y = 0), alpha = 0.4) +
     geom_boxplot(width = 0.2, outlier.shape = NA, alpha = 0.4, fill = "white") +
-    geom_point(aes(y = dev, color = area, size = academic_age), 
+    geom_point(aes(y = dev, color = area, size = n_publ), 
                position = position_jitter(width = 0.15), alpha = 0.4) +
     
-    labs(title = NULL, x = " ", y= "Deviation from the line (Plot C)") +
+    labs(title = NULL, x = " ", y= "Residuals") +
     geom_hline(yintercept=0, col = "grey30", linetype = "dotted")+
     guides(fill = FALSE, color = FALSE) +
     scale_fill_manual(values =  color_custom) +
