@@ -11,13 +11,16 @@
 
 # Packages ----------------------------------------------------------------
 
+# if (!require("devtools")) {
+#   install.packages("devtools")
+# }
+# devtools::install_github("cardosopmb/RAT")
 library("RAT")
 library("wosr")
 
 # get data ---------------------------------------------------------------
 
 authors <- readRDS("Data/authors.rds") # a database with 200 authors from the University of Helsinki from different fields
-load("Data/map.rda") #internal data in RAT
 
 # Setting sid
 sid <- auth(NULL, password = NULL) #change with your WoS access (if you have a university VPN, keep it as is)

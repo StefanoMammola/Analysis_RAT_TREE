@@ -21,6 +21,10 @@ library("ggpubr")
 library("ggplot2")
 library("graphics")
 library("PupillometryR")
+# if (!require("devtools")) {
+#   install.packages("devtools")
+# }
+# devtools::install_github("cardosopmb/RAT")
 library("RAT")
 library("stats")
 library("utils")
