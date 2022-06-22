@@ -2,7 +2,7 @@
 
 ###############################################################
 
-# Cardoso, P., Fukushima, C.S. & Mammola, S. (subm.) Quantifying the international collaboration of researchers and research institutions.
+# Cardoso, P., Fukushima, C.S. & Mammola, S. (2022) Quantifying the international collaboration of researchers and research institutions. Trends in Ecology and Evolution.
 
 ## ------------------------------------------------------------------------
 # 'R script to reproduce the analyses'
