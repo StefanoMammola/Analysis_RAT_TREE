@@ -19,20 +19,15 @@ rm(list = ls())
 
 library("ggpubr")
 library("ggplot2")
-library("graphics")
+#library("graphics")
 library("PupillometryR")
-# if (!require("devtools")) {
-#   install.packages("devtools")
-# }
-# devtools::install_github("cardosopmb/RAT")
-library("RAT")
+#library("RAT")
 library("stats")
 library("utils")
 library("tidyverse")
 
 # Load data ---------------------------------------------------------------
 
-load("Data/map.rda") #Data from within RAT with country GDP and centroid
 load("Data/authors_extracted.rda") # See Data_extraction.R for the data mining pipeline
 
 # Checking data -----------------------------------------------------------
@@ -125,7 +120,7 @@ color_custom <- c("chartreuse3","blue","black","purple")
     
     labs(title = NULL, x = " ", y= "Residuals") +
     geom_hline(yintercept=0, col = "grey30", linetype = "dotted")+
-    guides(fill = FALSE, color = FALSE) +
+    guides(fill = "none", color = "none") +
     scale_fill_manual(values =  color_custom) +
     scale_colour_manual(values = color_custom) +
     theme_bw() +
@@ -195,7 +190,7 @@ color_custom <- c("chartreuse3","blue","black","purple")
     
     labs(title = NULL, x = " ", y= "Residuals") +
     geom_hline(yintercept=0, col = "grey30", linetype = "dotted")+
-    guides(fill = FALSE, color = FALSE) +
+    guides(fill = "none", color = "none") +
     scale_fill_manual(values =  color_custom) +
     scale_colour_manual(values = color_custom) +
     theme_bw() +
