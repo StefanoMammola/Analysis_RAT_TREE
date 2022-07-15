@@ -1,6 +1,6 @@
 R code and data to generate the analysis in:
 
-Cardoso, P., Fukushima, C.S. & Mammola, S. (2022) Quantifying the international collaboration of researchers and research institutions. Trends in Ecology and Evolution.
+Cardoso, P., Fukushima, C.S. & Mammola, S. (2022) Quantifying the internationalization and representativeness in research. Trends in Ecology and Evolution, DOI: 10.1016/j.tree.2022.06.011
 
 The repository contains:
 
